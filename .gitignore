@@ -1,7 +1,1 @@
-/venv/
-/.env
-/flask_app/testing/
-/node_modules
-/tailwind/package-lock.json
-/tailwind/package.json
-.flaskenv
+/flask_app/users/config.py

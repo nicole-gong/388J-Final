@@ -3,9 +3,14 @@ from flask_login import login_required, current_user
 import datetime
 import dateutil
 
+import folium
+from folium.plugins import MarkerCluster
+import pandas as pd
+
 # other imports
 from ..forms import StartForm, POIForm
 from ..models import Trip, User
+from .. import TripClient
 
 # you need to register to create routes, so add flasklogin stuff and force loginrequired
 # ok so what routes do we need that are trips related?
@@ -22,28 +27,32 @@ trips = Blueprint("trips", __name__)
 
 @trips.route('/')
 def index():
-    form = StartForm()
-    
-    if form.validate_on_submit():
-        if current_user.is_authenticated:
-            # create trip with that name in mongodb
-            # go to trip route
-            time = form.start_time.data
-            trip = Trip(title=form.title.data,
-                        start_time=datetime.datetime(time.year, time.month, time.day, time.hour, time.minute),
-                        pois={},
-                        routes={})
-            trip.save()
-            
-            # redirect to planning route
-            return redirect(url_for('trips.plan_trip', trip_title=trip.title))
-        
-        # otherwise make them login
-        return redirect(url_for('users.login'))
-    
-    # maybe add title field
-    return render_template('index.html', form=form)
-    
+    data = TripClient.display_all()
+    m = plot(data["stations"], data["lines"])
+    m.get_root().width = "800px"
+    m.get_root().height = "600px"
+    iframe = m.get_root()._repr_html_()
+    return render_template('index.html', iframe=iframe, stations=data["stations"], lines=data["lines"])
+
+def plot(results, lines):
+    coords = [38.9, -77]
+    m = folium.Map(location=coords, zoom_start=13)
+    for station in results.values():
+        folium.Marker(
+            location=station.coords,
+            popup=station.name,
+            icon=folium.plugins.BeautifyIcon(
+                icon_shape="circle-dot", background_color="black"
+            ),
+        ).add_to(m)
+    for line in lines:
+        betweens = []
+        for stop in line.stops:
+            betweens.append(results[stop].coords)
+        folium.PolyLine(betweens, color=line.name, weight=5).add_to(m)
+
+    return m
+
 @trips.route('/plan/<trip_title>')
 @login_required
 def plan_trip(trip_title):

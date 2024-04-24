@@ -12,12 +12,12 @@ from flask_bcrypt import Bcrypt
 import dateutil
 
 # local dependencies
-# from .client import api
+from .client import TripClient
 
 db = MongoEngine()
 login_manager = LoginManager()
 bcrypt = Bcrypt()
-# client = api(os.getenv('GOOG_API_KEY'))
+client = TripClient()
 
 # blueprints
 from .users.routes import users

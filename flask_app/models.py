@@ -12,13 +12,11 @@ class User(db.Document, UserMixin):
                               max_length=40, 
                               unique=True, 
                               required=True)
-    # email = db.EmailField(unique=True, required=True)
     password = db.StringField(required=True)
     profile_pic = db.ImageField()
 
     # Returns unique string identifying our object
     def get_id(self):
-        # TODO: implement
         return self.username
     
 class Trip(db.Document):
