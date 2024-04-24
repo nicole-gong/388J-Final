@@ -16,9 +16,10 @@ class Trip(object):
         ]
         self.coords = [station_json["Lat"], station_json["Lon"]]
         self.name = station_json["Name"]
+        self.code = station_json["Code"]
     def __repr__(self):
         return self.name
-    
+
 class Line(object):
     def __init__(self, json):
         self.LineCode = json["LineCode"]
@@ -33,7 +34,7 @@ class TripClient(object):
     def __init__(self):
         self.sess = requests.Session()
 
-    def display_all():
+    def display_stations():
         headers = {
             # Request headers
             "api_key": "cc24d47f8cc24cf2a6ad15961ff446d2",
@@ -49,10 +50,18 @@ class TripClient(object):
             response = conn.getresponse()
             data = json.loads(response.read())
             conn.close()
-            results, lines = {}, []
+            results = {}
             for station in data["Stations"]:
                 results[station["Code"]] = Trip(station)
-            
+
+            return results
+
+        except Exception as e:
+            print("[Errno {0}] {1}".format(e.errno, e.strerror))
+
+    def display_lines():
+        headers = {"api_key": "cc24d47f8cc24cf2a6ad15961ff446d2",}
+        try:
             conn = http.client.HTTPSConnection('api.wmata.com')
             conn.request(
                 "GET",
@@ -62,6 +71,7 @@ class TripClient(object):
             response = conn.getresponse()
             data = json.loads(response.read())
             conn.close()
+            lines= {}
             for line in data["Lines"]:
                 new_line = Line(line)
                 conn = http.client.HTTPSConnection('api.wmata.com')
@@ -75,12 +85,30 @@ class TripClient(object):
                 conn.close()
                 for stop in data["Path"]:
                     new_line.stops.append(stop["StationCode"])
-                lines.append(new_line)
-
-            return {"stations": results, "lines": lines}
+                lines[stop["LineCode"]] = new_line
+            
+            return lines
 
         except Exception as e:
             print("[Errno {0}] {1}".format(e.errno, e.strerror))
+
+    def display_station(code):
+        headers = {"api_key": "cc24d47f8cc24cf2a6ad15961ff446d2",}
+        try:
+            conn = http.client.HTTPSConnection('api.wmata.com')
+            conn.request(
+                "GET",
+                f"https://api.wmata.com/Rail.svc/json/jStationInfo?StationCode={code}",
+                headers=headers,
+            )
+            response = conn.getresponse()
+            data = json.loads(response.read())
+            conn.close()
+            return Trip(data)
+
+        except Exception as e:
+            print("[Errno {0}] {1}".format(e.errno, e.strerror))
+
 
 # class api(object):
 #     def __init__(self, api_key):

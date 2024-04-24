@@ -4,8 +4,6 @@ import datetime
 import dateutil
 
 import folium
-from folium.plugins import MarkerCluster
-import pandas as pd
 
 # other imports
 from ..forms import StartForm, POIForm
@@ -24,34 +22,69 @@ from .. import TripClient
 #   iv. there should be a button on the bottom of the page that says finish and just redirects to the account page
 
 trips = Blueprint("trips", __name__)
+stations = TripClient.display_stations()
+lines = TripClient.display_lines()
 
 @trips.route('/')
 def index():
-    data = TripClient.display_all()
-    m = plot(data["stations"], data["lines"])
+    m = plot(stations, lines)
     m.get_root().width = "800px"
     m.get_root().height = "600px"
     iframe = m.get_root()._repr_html_()
-    return render_template('index.html', iframe=iframe, stations=data["stations"], lines=data["lines"])
+    return render_template('index.html', iframe=iframe)
 
-def plot(results, lines):
+def plot(stations, lines):
     coords = [38.9, -77]
     m = folium.Map(location=coords, zoom_start=13)
-    for station in results.values():
+    for station in stations:
+        html = folium.Html(f"<a href={url_for('trips.line_info',station_code=station)} target='_top'>{stations[station].name}</a>", script=True)
         folium.Marker(
-            location=station.coords,
-            popup=station.name,
+            location=stations[station].coords,
+            popup=folium.Popup(html),
             icon=folium.plugins.BeautifyIcon(
                 icon_shape="circle-dot", background_color="black"
             ),
         ).add_to(m)
     for line in lines:
         betweens = []
-        for stop in line.stops:
-            betweens.append(results[stop].coords)
-        folium.PolyLine(betweens, color=line.name, weight=5).add_to(m)
+        for stop in lines[line].stops:
+            betweens.append(stations[stop].coords)
+        folium.PolyLine(betweens, color=lines[line].name, weight=5).add_to(m)
 
     return m
+
+def plot_line(station, stations, lines):
+    coords = [38.9, -77]
+    m = folium.Map(location=coords, zoom_start=13)
+    html = folium.Html(f"<a href={url_for('trips.line_info',station_code=station.code)}>{station.name}</a>", script=True)
+    folium.Marker(
+        location=station.coords,
+        popup=folium.Popup(html),
+        icon=folium.plugins.BeautifyIcon(
+            icon_shape="circle-dot", background_color="black"
+        ),
+    ).add_to(m)
+    for line in lines:
+        betweens = []
+        for stop in lines[line].stops:
+            betweens.append(stations[stop].coords)
+        folium.PolyLine(betweens, color=lines[line].name, weight=5).add_to(m)
+
+    return m
+
+@trips.route("/line/<station_code>", methods=["GET"])
+def line_info(station_code):
+    data = TripClient.display_station(station_code)
+    iframes = []
+    for linecode in data.linecodes:
+        if linecode:
+            m = plot_line(data, stations, {linecode: lines[linecode]})
+            m.get_root().width = "800px"
+            m.get_root().height = "600px"
+            iframe = m.get_root()._repr_html_()
+            iframes.append(iframe)
+    return render_template(
+        "station.html", iframes=iframes)
 
 @trips.route('/plan/<trip_title>')
 @login_required

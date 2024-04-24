@@ -3,7 +3,9 @@
 <html>
 <head></head>
 <body>
-    {{ iframe|safe }}
+    {% for iframe in iframes %}
+    <div>{{ iframe|safe }}</div>
+    {% endfor %}
 </body>
 </html>
 {% endblock %}
