@@ -3,7 +3,7 @@ from wtforms import StringField, SubmitField, PasswordField
 from wtforms_components import TimeField, DateTimeField
 from wtforms.validators import InputRequired, Length, EqualTo, ValidationError
 
-from models import User
+from .models import User
 
 # naming the trip duh
 class StartForm(FlaskForm):

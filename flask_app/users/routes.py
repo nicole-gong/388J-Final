@@ -3,8 +3,8 @@ from flask_login import current_user, login_required, login_user, logout_user
 from .. import bcrypt
 
 # other imports
-from forms import RegistrationForm, LoginForm, UpdateUsernameForm
-from models import User, Trip
+from ..forms import RegistrationForm, LoginForm, UpdateUsernameForm
+from ..models import User, Trip
 
 # TODO
 # user route stuff (look at p4)
@@ -62,7 +62,7 @@ def logout():
 
 # now displays trips as well
 # idk if this url actually works
-@users.route('/account/<current_user.username>', methods=["GET", "POST"])
+@users.route('/account', methods=["GET", "POST"])
 @login_required
 def account():
     update_username_form = UpdateUsernameForm()
