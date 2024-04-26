@@ -1,9 +1,16 @@
 {% extends "header.html" %} {% block content %}
 <!DOCTYPE html>
 <html>
-<head></head>
+<head>
+</head>
 <body>
-    {{ iframe|safe }}
+    <div style="display: inline">
+        <div style="display: inline-block; vertical-align: top" class="map">
+            {{ iframe|safe }}
+        </div>
+        <div style="display: inline-block" class="trip_list">
+        </div>
+    </div>
 </body>
 </html>
 {% endblock %}

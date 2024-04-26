@@ -30,6 +30,14 @@ class Line(object):
     def __repr__(self):
         return self.name
 
+class Distance(object):
+    def __init__(self, json):
+        self.distance = None
+        self.name = json["StationName"]
+        self.code = json["StationCode"]
+    def __repr__(self):
+        return self.distance
+
 class TripClient(object):
     def __init__(self):
         self.sess = requests.Session()
@@ -39,7 +47,6 @@ class TripClient(object):
             # Request headers
             "api_key": "cc24d47f8cc24cf2a6ad15961ff446d2",
         }
-
         try:
             conn = http.client.HTTPSConnection('api.wmata.com')
             conn.request(
@@ -86,7 +93,7 @@ class TripClient(object):
                 for stop in data["Path"]:
                     new_line.stops.append(stop["StationCode"])
                 lines[stop["LineCode"]] = new_line
-            
+
             return lines
 
         except Exception as e:
@@ -109,6 +116,25 @@ class TripClient(object):
         except Exception as e:
             print("[Errno {0}] {1}".format(e.errno, e.strerror))
 
+    def shortest_path(src, dest):
+        headers = {"api_key": "cc24d47f8cc24cf2a6ad15961ff446d2",}
+        conn = http.client.HTTPSConnection('api.wmata.com')
+        conn.request(
+            "GET",
+            f"https://api.wmata.com/Rail.svc/json/jPath?FromStationCode={src}&ToStationCode={dest}",
+            headers=headers,
+        )
+        response = conn.getresponse()
+        data = json.loads(response.read())
+        conn.close()
+        distance = 0
+        results = []
+        for station in data["Path"][1:]:
+            distance += station["DistanceToPrev"]
+            new_distance = Distance(station)
+            new_distance.distance = distance
+            results.append(new_distance)
+        return results
 
 # class api(object):
 #     def __init__(self, api_key):

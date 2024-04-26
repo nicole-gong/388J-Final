@@ -4,6 +4,7 @@ import datetime
 import dateutil
 
 import folium
+from folium.plugins import MarkerCluster
 
 # other imports
 from ..forms import StartForm, POIForm
@@ -25,22 +26,42 @@ trips = Blueprint("trips", __name__)
 stations = TripClient.display_stations()
 lines = TripClient.display_lines()
 
-@trips.route('/')
+@trips.route("/", methods=["GET", "POST"])
 def index():
     m = plot(stations, lines)
-    m.get_root().width = "800px"
-    m.get_root().height = "600px"
+    m.get_root().width = "1200px"
+    m.get_root().height = "700px"
     iframe = m.get_root()._repr_html_()
+    # if request.method == "POST":
+    #     return redirect(url_for("trips.create_itin"))
+
     return render_template('index.html', iframe=iframe)
 
+# @trips.route("/create_itin", methods=["GET", "POST"])
+# def create_itin():
+#     checked_stations = request.form.get("checked")
+#     if not checked_stations: checked_stations = ["ERROR"]
+#     m = plot(stations, lines)
+#     m.get_root().width = "1200px"
+#     m.get_root().height = "700px"
+#     iframe = m.get_root()._repr_html_()
+#     if request.method == 'POST':
+#         return redirect(url_for("trips.create_itin"))
+
+#     return render_template("create_itin.html", checked_stations=checked_stations, iframe=iframe)
+
 def plot(stations, lines):
-    coords = [38.9, -77]
-    m = folium.Map(location=coords, zoom_start=13)
+    coords = [38.9, -76.9]
+    m = folium.Map(location=coords, zoom_start=12)
     for station in stations:
-        html = folium.Html(f"<a href={url_for('trips.line_info',station_code=station)} target='_top'>{stations[station].name}</a>", script=True)
+        html = folium.Html(
+            f"<a href={url_for('trips.line_info',station_code=station)} target='_top'>{stations[station].name}</a>",
+            # + f"<input type='checkbox' name='checked_box' id='{station}'>",
+            script=True,
+        )
         folium.Marker(
             location=stations[station].coords,
-            popup=folium.Popup(html),
+            popup=folium.Popup(html, show=True),
             icon=folium.plugins.BeautifyIcon(
                 icon_shape="circle-dot", background_color="black"
             ),
@@ -54,20 +75,27 @@ def plot(stations, lines):
     return m
 
 def plot_line(station, stations, lines):
-    coords = [38.9, -77]
-    m = folium.Map(location=coords, zoom_start=13)
+    coords = [38.9, -76.9]
+    m = folium.Map(location=coords, zoom_start=12)
     html = folium.Html(f"<a href={url_for('trips.line_info',station_code=station.code)}>{station.name}</a>", script=True)
-    folium.Marker(
-        location=station.coords,
-        popup=folium.Popup(html),
-        icon=folium.plugins.BeautifyIcon(
-            icon_shape="circle-dot", background_color="black"
-        ),
-    ).add_to(m)
     for line in lines:
         betweens = []
         for stop in lines[line].stops:
             betweens.append(stations[stop].coords)
+            folium.Marker(
+                location=stations[stop].coords,
+                popup=folium.Popup(html),
+                icon=folium.plugins.BeautifyIcon(icon_shape="circle-dot"),
+            ).add_to(m)
+
+        folium.Marker(
+            location=station.coords,
+            popup=folium.Popup(html),
+            icon=folium.plugins.BeautifyIcon(
+                icon_shape="doughnut", background_color="black"
+            ),
+        ).add_to(m)
+
         folium.PolyLine(betweens, color=lines[line].name, weight=5).add_to(m)
 
     return m
@@ -76,15 +104,19 @@ def plot_line(station, stations, lines):
 def line_info(station_code):
     data = TripClient.display_station(station_code)
     iframes = []
+    dests = []
     for linecode in data.linecodes:
         if linecode:
             m = plot_line(data, stations, {linecode: lines[linecode]})
-            m.get_root().width = "800px"
-            m.get_root().height = "600px"
+            m.get_root().width = "600px"
+            m.get_root().height = "300px"
             iframe = m.get_root()._repr_html_()
             iframes.append(iframe)
+            dests += TripClient.shortest_path(station_code, lines[linecode].start)
+            dests += TripClient.shortest_path(station_code, lines[linecode].end)
+
     return render_template(
-        "station.html", iframes=iframes)
+        "station.html", data=data, dests=dests, iframes=iframes)
 
 @trips.route('/plan/<trip_title>')
 @login_required
