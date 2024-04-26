@@ -1,29 +1,23 @@
 {% extends "header.html" %} {% block content %}
-<!DOCTYPE html>
-<html>
-<head></head>
-<body>
-    <div style="display: inline">
-        <div style="display: inline-block; vertical-align: top" class="station_info">
-            <b>Station Name:</b> {{ data.name }} <br>
-            <b>Address:</b> {{ data.address }} <br>
-            <b>Lines:</b>
-            {% for line in data.linecodes %}
-                {{ line if line }}
-            {% endfor %} <br>
+<div style="display: inline">
+    <div style="display: inline-block; vertical-align: top" class="station_info">
+        <b>Station Name:</b> {{ data.name }} <br>
+        <b>Address:</b> {{ data.address }} <br>
+        <b>Lines:</b>
+        {% for line in data.linecodes %}
+            {{ line if line }}
+        {% endfor %} <br>
 
-            <b>Destinations:</b> <br>
-            {% for dest in dests %}
-                <a href= "{{url_for('trips.line_info',station_code=dest.code)}}" target='_top'>{{ dest.name }}</a>
-                : {{ dest.distance }} ft. <br>
-            {% endfor %} <br>
-        </div>
-        <div style="display: inline-block" class="map"> 
-            {% for iframe in iframes %}
-            <div>{{ iframe|safe }}</div>
-            {% endfor %}
-        </div>
+        <b>Destinations:</b> <br>
+        {% for dest in dests %}
+            <a href= "{{url_for('trips.line_info',station_code=dest.code)}}" target='_top'>{{ dest.name }}</a>
+            : {{ dest.distance }} ft. <br>
+        {% endfor %} <br>
     </div>
-</body>
-</html>
+    <div style="display: inline-block" class="map"> 
+        {% for iframe in iframes %}
+        <div>{{ iframe|safe }}</div>
+        {% endfor %}
+    </div>
+</div>
 {% endblock %}

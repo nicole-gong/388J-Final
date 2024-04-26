@@ -4,12 +4,7 @@ from .. import bcrypt
 
 # other imports
 from ..forms import RegistrationForm, LoginForm, UpdateUsernameForm
-from ..models import User, Trip
-
-# TODO
-# user route stuff (look at p4)
-# 1. need user detail route similar to p4, cept the reviews r replaced by trips
-#   i. there should be a button to allow users to retroactively edit trips
+from ..models import User
 
 users = Blueprint("users", __name__)
 

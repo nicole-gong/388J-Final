@@ -1,16 +1,17 @@
 from flask import Blueprint, render_template, url_for, request, redirect
 from flask_login import login_required, current_user
+import json
 
 import folium
 from folium.plugins import MarkerCluster
 
-from ..forms import StartForm, POIForm
-from ..models import Trip, User
+from ..models import User
 from .. import TripClient
 
 trips = Blueprint("trips", __name__)
 stations = TripClient.display_stations()
 lines = TripClient.display_lines()
+coords = [38.9, -76.9]
 
 @trips.route("/", methods=["GET", "POST"])
 def index():
@@ -18,31 +19,38 @@ def index():
     m.get_root().width = "1200px"
     m.get_root().height = "700px"
     iframe = m.get_root()._repr_html_()
-    # if request.method == "POST":
-    #     return redirect(url_for("trips.create_itin"))
+    if request.method == "POST":
+        return redirect(url_for("trips.create_itin", checked_stations=request.form.get('checked')))
 
     return render_template('index.html', iframe=iframe)
 
-# @trips.route("/create_itin", methods=["GET", "POST"])
-# def create_itin():
-#     checked_stations = request.form.get("checked")
-#     if not checked_stations: checked_stations = ["ERROR"]
-#     m = plot(stations, lines)
-#     m.get_root().width = "1200px"
-#     m.get_root().height = "700px"
-#     iframe = m.get_root()._repr_html_()
-#     if request.method == 'POST':
-#         return redirect(url_for("trips.create_itin"))
+@trips.route("/create_itin/<checked_stations>", methods=["GET", "POST"])
+def create_itin(checked_stations):
+    checked_stations = json.loads(checked_stations)
+    display_stations = {}
+    display_lines = {}
+    for station_code in checked_stations:
+        station = stations[station_code]
+        display_stations[station_code] = station
+        for linecode in station.linecodes:
+            if linecode and linecode not in display_lines:
+                display_lines[linecode] = lines[linecode] 
 
-#     return render_template("create_itin.html", checked_stations=checked_stations, iframe=iframe)
+    m = plot(display_stations, display_lines)
+    m.get_root().width = "1200px"
+    m.get_root().height = "700px"
+    iframe = m.get_root()._repr_html_()
+    if request.method == 'POST':
+        return redirect(url_for("trips.create_itin"))
 
-def plot(stations, lines):
-    coords = [38.9, -76.9]
+    return render_template("create_itin.html", checked_stations=checked_stations, iframe=iframe)
+
+def plot(this_stations, lines):
     m = folium.Map(location=coords, zoom_start=12)
-    for station in stations:
+    for station in this_stations:
         html = folium.Html(
-            f"<a href={url_for('trips.line_info',station_code=station)} target='_top'>{stations[station].name}</a>",
-            # + f"<input type='checkbox' name='checked_box' id='{station}'>",
+            f"<a href={url_for('trips.line_info',station_code=station)} target='_top'>{stations[station].name}</a>"
+            + f"<input type='checkbox' name='checked_box' id='{station}'>",
             script=True,
         )
         folium.Marker(
@@ -60,8 +68,7 @@ def plot(stations, lines):
 
     return m
 
-def plot_line(station, stations, lines):
-    coords = [38.9, -76.9]
+def plot_one(station, lines):
     m = folium.Map(location=coords, zoom_start=12)
     html = folium.Html(f"<a href={url_for('trips.line_info',station_code=station.code)}>{station.name}</a>", script=True)
     for line in lines:
@@ -93,7 +100,7 @@ def line_info(station_code):
     dests = []
     for linecode in data.linecodes:
         if linecode:
-            m = plot_line(data, stations, {linecode: lines[linecode]})
+            m = plot_one(data, {linecode: lines[linecode]})
             m.get_root().width = "600px"
             m.get_root().height = "300px"
             iframe = m.get_root()._repr_html_()

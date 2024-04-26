@@ -1,5 +1,17 @@
-{% block header %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{url_for('static',filename='compiled.css')}}" />
+    {% if title %}
+    <title>{{ title }}</title>
+    {% else %}
+    <title>Movie Reviews</title>
+    {% endif %}
+</head>
+<body>
 <a class="m-5 navlink" href="{{ url_for('trips.index') }}">GO HOME</a>
 <h1>WMATA!!!! LFG</h1>
 {% block content %}{% endblock %}
-{% endblock %}
+</body>
+</html>

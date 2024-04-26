@@ -11,7 +11,7 @@ class User(db.Document, UserMixin):
                               max_length=40, 
                               unique=True, 
                               required=True)
-    password = db.PasswordField(required=True)
+    password = db.StringField(required=True)
     profile_pic = db.ImageField()
 
     def get_id(self):

@@ -1,16 +1,25 @@
 {% extends "header.html" %} {% block content %}
-<!DOCTYPE html>
-<html>
-<head>
-</head>
-<body>
-    <div style="display: inline">
-        <div style="display: inline-block; vertical-align: top" class="map">
-            {{ iframe|safe }}
-        </div>
-        <div style="display: inline-block" class="trip_list">
-        </div>
+<div style="display: inline">
+    <div style="display: inline-block; vertical-align: top" class="map">
+        {{ iframe|safe }}
     </div>
-</body>
-</html>
+    <div style="display: inline-block" class="trip_list">
+        <form id='route' method="POST" action="">
+            <input type="hidden" id="checkedDataBoxes" name='checked' value="">
+            <input type="submit" value="Generate Route">
+        </form>
+    </div>
+</div>
+
+<script>
+    document.getElementById('route').addEventListener('submit', function (event) {
+        var iframe=document.querySelector('iframe')
+        var checkedElements = iframe.contentWindow.document.querySelectorAll('[name="checked_box"]:checked');
+        var checkedData = Array.from(checkedElements, function (element) {
+            return element.id;
+        });
+        document.getElementById('checkedDataBoxes').value = JSON.stringify(checkedData);
+        this.submit();
+    });
+</script>
 {% endblock %}
