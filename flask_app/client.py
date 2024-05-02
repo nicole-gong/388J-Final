@@ -5,6 +5,12 @@ import json
 import dateutil
 import datetime
 
+from .config import WMATA_KEY
+
+headers = {
+    "api_key": WMATA_KEY,
+}
+
 class Trip(object):
     def __init__(self, station_json):
         self.address = station_json["Address"]["Street"]
@@ -42,10 +48,6 @@ class TripClient(object):
         self.sess = requests.Session()
 
     def display_stations():
-        headers = {
-            # Request headers
-            "api_key": "cc24d47f8cc24cf2a6ad15961ff446d2",
-        }
         try:
             conn = http.client.HTTPSConnection('api.wmata.com')
             conn.request(
@@ -66,7 +68,6 @@ class TripClient(object):
             print("[Errno {0}] {1}".format(e.errno, e.strerror))
 
     def display_lines():
-        headers = {"api_key": "cc24d47f8cc24cf2a6ad15961ff446d2",}
         try:
             conn = http.client.HTTPSConnection('api.wmata.com')
             conn.request(
@@ -99,7 +100,6 @@ class TripClient(object):
             print("[Errno {0}] {1}".format(e.errno, e.strerror))
 
     def display_station(code):
-        headers = {"api_key": "cc24d47f8cc24cf2a6ad15961ff446d2",}
         try:
             conn = http.client.HTTPSConnection('api.wmata.com')
             conn.request(
@@ -116,7 +116,6 @@ class TripClient(object):
             print("[Errno {0}] {1}".format(e.errno, e.strerror))
 
     def shortest_path(src, dest):
-        headers = {"api_key": "cc24d47f8cc24cf2a6ad15961ff446d2",}
         conn = http.client.HTTPSConnection('api.wmata.com')
         conn.request(
             "GET",

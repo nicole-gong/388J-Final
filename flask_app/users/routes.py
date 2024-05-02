@@ -1,10 +1,11 @@
 from flask import Blueprint, render_template, redirect, url_for, request, flash
 from flask_login import current_user, login_required, login_user, logout_user
 from .. import bcrypt
+import json 
 
 # other imports
 from ..forms import RegistrationForm, LoginForm, UpdateUsernameForm
-from ..models import User
+from ..models import User, Itinerary
 
 users = Blueprint("users", __name__)
 
@@ -20,11 +21,9 @@ def register():
     if form.validate_on_submit():
         hashed = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
         user = User(username=form.username.data, 
-                    email=form.email.data, 
                     password=hashed)
         user.save()
         
-        #redirect to login page
         return redirect(url_for('users.login'))
     
     # otherwise re-render page
@@ -32,21 +31,17 @@ def register():
 
 @users.route('/login', methods=["GET", "POST"])
 def login():
-    # if user is already logged in, send to home page
     if current_user.is_authenticated:
         return redirect(url_for('trips.index'))
     
     form = LoginForm()
-    
     if form.validate_on_submit():
         user = User.objects(username=form.username.data).first()
-        
         if (user is not None and bcrypt.check_password_hash(user.password, form.password.data)):
             login_user(user)
             return redirect(url_for('users.account'))
         else:
             flash(message="Authentication Error. Please Try Logging in Again")
-    
     return render_template('login.html', title="Login", form=form)
 
 @users.route('/logout')
@@ -55,20 +50,25 @@ def logout():
     logout_user()
     return redirect(url_for('trips.index'))
 
-# now displays trips as well
-# idk if this url actually works
 @users.route('/account', methods=["GET", "POST"])
 @login_required
 def account():
     update_username_form = UpdateUsernameForm()
-    trips = list(Trip.objects())
-    
-    if request.method == "POST":        
+    if request.method == "POST":
         if update_username_form.submit_username.data and update_username_form.validate():
-            # TODO: handle update username form submit
-            current_user.modify(username=update_username_form.username.data)
-            
-        if not update_username_form.errors:
-            return redirect(url_for('users.account'))  # redirect to reflect changes
-        
-    return render_template('account.html', update_username_form=update_username_form, trips=trips)
+            new_username = update_username_form.username.data
+            current_user.modify(username=new_username)
+            return redirect(url_for("users.account"))
+
+    itins = Itinerary.objects(creator=current_user.username)
+    links = []
+    for itin in itins:
+        print(json.dumps(itin.stations.split()))
+        links.append(json.dumps(itin.stations.split()))
+
+    return render_template(
+        "account.html",
+        current_user=current_user,
+        update_username_form=update_username_form,
+        zipped=zip(itins, links)
+    )

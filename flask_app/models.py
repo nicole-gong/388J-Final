@@ -16,3 +16,11 @@ class User(db.Document, UserMixin):
 
     def get_id(self):
         return self.username
+
+class Itinerary(db.Document):
+    creator = db.StringField(min_length=1, max_length=40, unique=True, required=True)
+    itin_name = db.StringField(required=True)
+    stations = db.StringField(required=True)
+    
+    def get_id(self):
+        return self.stations
