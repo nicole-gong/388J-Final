@@ -5,7 +5,7 @@ import json
 import folium
 from folium.plugins import MarkerCluster
 
-from ..models import Itinerary
+from ..models import User, Itinerary
 from .. import TripClient
 from ..forms import ItinForm
 
@@ -45,11 +45,12 @@ def create_itin(checked_stations):
     if form.validate_on_submit():
         itin = Itinerary(
             itin_name=form.itin_name.data,
-            creator=current_user.username,
             stations=" ".join(checked_stations)
         )
+        user = User.objects(username=current_user.username).first()
         itin.save()
-        return redirect(request.path)
+        user.update(push__itins=itin)
+        return redirect(url_for("users.account"))
 
     return render_template("create_itin.html", itin_form=form, stations=stations, checked_stations=checked_stations, iframe=iframe)
 
@@ -61,22 +62,25 @@ def line_info(station_code):
     for linecode in data.linecodes:
         if linecode:
             m = plot_one(data, {linecode: lines[linecode]})
-            m.get_root().width = "600px"
+            m.get_root().width = "800px"
             m.get_root().height = "300px"
             iframe = m.get_root()._repr_html_()
             iframes.append(iframe)
             dests += TripClient.shortest_path(station_code, lines[linecode].start)
             dests += TripClient.shortest_path(station_code, lines[linecode].end)
-
+    itins = Itinerary.objects(stations__contains=station_code)
+    links = []
+    for itin in itins:
+        links.append(json.dumps(itin.stations.split()))
     return render_template(
-        "station.html", data=data, dests=dests, iframes=iframes)
+        "station.html", x=links, stations=stations, data=data, dests=dests, iframes=iframes, zipped=zip(itins, links))
 
 def plot():
     m = folium.Map(location=coords, zoom_start=12)
     for station in stations:
         html = folium.Html(
-            f"<a href={url_for('trips.line_info',station_code=station)} target='_top'>{stations[station].name}</a>"
-            + f"<input type='checkbox' name='checked_box' id='{station}'>",
+            f"<div style='display: flex; flex-direction: column; justify-content: center; align-items: center;'> <a href={url_for('trips.line_info',station_code=station)} target='_top'>{stations[station].name}</a>"
+            + f"<input type='checkbox' name='checked_box' id='{station}'> </div>",
             script=True,
         )
         folium.Marker(
@@ -123,7 +127,7 @@ def plot_one(station, lines):
         betweens = []
         for stop in lines[line].stops:
             html = folium.Html(
-               f"<a href={url_for('trips.line_info',station_code=stations[stop].code)}>{stations[stop].name}</a>",
+                f"<a href={url_for('trips.line_info',station_code=stations[stop].code)} target='_top'>{stations[stop].name}</a>",
                 script=True,
             )
             betweens.append(stations[stop].coords)
@@ -134,7 +138,7 @@ def plot_one(station, lines):
             ).add_to(m)
 
         html = folium.Html(
-            f"<a href={url_for('trips.line_info',station_code=station.code)}>{station.name}</a>",
+            f"<a href={url_for('trips.line_info',station_code=station.code)} target='_top'>{station.name}</a>",
             script=True,
         )
         folium.Marker(

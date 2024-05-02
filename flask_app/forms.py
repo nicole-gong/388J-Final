@@ -11,14 +11,14 @@ from .models import User, Itinerary
 
 class ItinForm(FlaskForm):
     itin_name = StringField(
-        "Itinerary Name", validators=[InputRequired(), Length(min=1, max=40)]
+        "Itinerary Name:", validators=[InputRequired(), Length(min=1, max=40)]
     )
     submit = SubmitField("Generate Itinerary")
     
-    def validate_itin(self, itin_name):
+    def validate_itin_name(self, itin_name):
         name = Itinerary.objects(itin_name=itin_name.data).first()
         if name is not None:
-            raise ValidationError("This itinerary name is taken. Please choose another")
+            raise ValidationError("This itinerary name is taken. Please choose another.")
 
 class RegistrationForm(FlaskForm):
     username = StringField(

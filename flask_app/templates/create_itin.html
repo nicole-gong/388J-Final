@@ -1,19 +1,18 @@
 {% extends "header.html" %} {% block content %}
 <div style="display: inline">
     <div style="display: inline-block" class="map">
-        {{ iframe|safe }}
+        <div class="iframe"> {{ iframe|safe }} </div>
     </div>
 
     <div style="display: inline-block; vertical-align: top" class="station_info">
+        <h3>Station List</h3>
         {% for station in checked_stations %}
             <a href="{{url_for('trips.line_info',station_code=station)}}" target='_top'>{{ stations[station] }}</a><br>
         {% endfor %}
-        
+        <br>
+
         {% if current_user.is_authenticated %}
-            <h3 class="text-xl">
-                Give your Darling darling beautiful darling itinerary a name!
-            </h3>
-            
+            <h3>Give your Darling darling beautiful darling itinerary a name!</h3>
             <form class="review-form" method="POST" action="">
                 {{ itin_form.csrf_token }}
                 <div class="form-group">
@@ -27,8 +26,10 @@
                     </div>
                     {% endif %}
                 </div>
-                {{ itin_form.submit(class="review-button") }}
+                {{ itin_form.submit(class="button") }}
             </form>
+        {% else %}
+        Please <a href="{{ url_for('users.login') }}">login </a> to save this itinerary to your account.
         {% endif %}
 
     </div>

@@ -1,23 +1,39 @@
 {% extends "header.html" %} {% block content %}
+<div class="map">
+    <br>
+    {% for iframe in iframes %}
+    <div class="iframe">{{ iframe|safe }}</div><br>
+    {% endfor %}
+</div>
 <div style="display: inline">
     <div style="display: inline-block; vertical-align: top" class="station_info">
-        <b>Station Name:</b> {{ data.name }} <br>
+        <h3>Station Information</h3>
+        <b>Name:</b> {{ data.name }} <br>
         <b>Address:</b> {{ data.address }} <br>
         <b>Lines:</b>
         {% for line in data.linecodes %}
             {{ line if line }}
         {% endfor %} <br>
 
-        <b>Destinations:</b> <br>
+        <b>Direct Connections To:</b> <br>
         {% for dest in dests %}
             <a href= "{{url_for('trips.line_info',station_code=dest.code)}}" target='_top'>{{ dest.name }}</a>
             : {{ dest.distance }} ft. <br>
         {% endfor %} <br>
     </div>
-    <div style="display: inline-block" class="map"> 
-        {% for iframe in iframes %}
-        <div>{{ iframe|safe }}</div><br>
-        {% endfor %}
+    <div style="display: inline-block; vertical-align: top" class="station_info">
+        {% if x|length != 0 %}
+            <h3>Itineraries containing {{ data.name }}: </h3>
+            {% for itin, link in zipped %}
+                <a href="{{url_for('trips.create_itin',checked_stations=link)}}" target='_top'>{{ itin.itin_name }}</a>:
+                {% set station_list = itin.stations.split(' ') %}
+                {% for station in station_list %}
+                    <br>{{stations[station].name}}
+                {% endfor %} <br>
+            {% endfor %}
+        {% else %}
+            <h3>No itineraries containing {{data.name}} exist... Help our glorious society by making one!</h3>
+        {% endif %}
     </div>
 </div>
 {% endblock %}

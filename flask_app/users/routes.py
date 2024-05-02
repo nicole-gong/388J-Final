@@ -60,7 +60,7 @@ def account():
             current_user.modify(username=new_username)
             return redirect(url_for("users.account"))
 
-    itins = Itinerary.objects(creator=current_user.username)
+    itins = User.objects(username=current_user.username).first().itins
     links = []
     for itin in itins:
         print(json.dumps(itin.stations.split()))

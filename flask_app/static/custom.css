@@ -1,0 +1,73 @@
+:root {
+--transparent: #632435bc;
+    --hover: #eae8e8;
+    --darkerPink: #631e30;
+    --darkPink: #903a4e;
+    --mediumPink: #d27e92;
+    --lightPink: #e7aabc;
+    --lighterPink: #eed4da;
+    --border: #240414;
+    --text: #171717;
+    --spacing: 15px;
+    font-family: 'Lucida Console';
+    background-color: var(--lighterPink);
+    padding: var(--spacing)
+}
+
+a:link {
+    color: var(--darkerPink);
+    text-decoration: none
+}
+a:visited {
+    color: var(--darkPink);
+}
+a:hover {
+    color: var(--border);
+}
+
+.station_info {
+    background-color: var(--lighterPink);
+    padding: var(--spacing);
+}
+
+.map {
+    background-color: var(--lightPink);
+}
+.iframe {
+    padding: var(--spacing);
+    padding-bottom: 0px;
+    padding-top: 0px;
+}
+
+.navbar {
+    font-weight: bold;
+    padding: var(--spacing);
+    background-color: var(--mediumPink);
+    font-size: x-large;
+}
+
+.button {
+    font-size: larger;
+    font-weight: bold;
+    border: none;
+    background-color: var(--lightPink)
+}
+
+.button:hover {
+    background-color: var(--mediumPink);
+}
+
+.form-group {
+    background-color: var(--lightPink);
+    padding: 5px;
+    margin: 5px;
+}
+
+.form-content {
+    border: none;
+    background-color: var(--lighterPink);
+}
+
+h3 {
+    margin-bottom: 5px;
+}

@@ -1,12 +1,12 @@
 {% extends "header.html" %} {% block content %}
 <div style="display: inline">
     <div style="display: inline-block; vertical-align: top" class="map">
-        {{ iframe|safe }}
+        <div class="iframe">{{ iframe|safe }}</div>
     </div>
-    <div style="display: inline-block" class="trip_list">
+    <div style="display: inline-block" class="station_info">
         <form id='route' method="POST" action="">
             <input type="hidden" id="checkedDataBoxes" name='checked' value="">
-            <input type="submit" value="Generate Route">
+            <input class="button" type="submit" value="Create Itinerary">
         </form>
     </div>
 </div>
