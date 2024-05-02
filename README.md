@@ -6,3 +6,4 @@ WMATA API PILLLLLL -nicole gong CMSC388j S2024
 ```console
 $ pip3 install -r requirements.txt
 ```
+and ask me for the config file
