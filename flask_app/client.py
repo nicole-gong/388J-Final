@@ -1,14 +1,13 @@
 import requests
 import http.client, urllib.request, urllib.parse, urllib.error, base64
-
+from os import getenv
 import json
 import dateutil
 import datetime
-
-from .config import WMATA_KEY
-
+from dotenv import load_dotenv
+load_dotenv()
 headers = {
-    "api_key": WMATA_KEY,
+    "api_key": getenv("WMATA_KEY"),
 }
 
 class Trip(object):
