@@ -36,4 +36,5 @@ urllib3==1.26.9
 waitress==2.1.2
 Werkzeug==2.0.3
 WTForms==3.0.1
+WTForms-Components==0.10.5
 folium==0.16.0
