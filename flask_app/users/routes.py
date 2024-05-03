@@ -63,8 +63,7 @@ def account():
     itins = User.objects(username=current_user.username).first().itins
     links = []
     for itin in itins:
-        print(json.dumps(itin.stations.split()))
-        links.append(json.dumps(itin.stations.split()))
+        links.append(itin.stations)
 
     return render_template(
         "account.html",
