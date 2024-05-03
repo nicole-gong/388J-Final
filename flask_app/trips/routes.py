@@ -21,16 +21,16 @@ def index():
     m.get_root().height = "700px"
     iframe = m.get_root()._repr_html_()
     if request.method == "POST":
-        return redirect(url_for("trips.create_itin", checked_stations=request.form.get('checked')))
+        return redirect(url_for("trips.create_itin", checked_stations= ''.join(request.form.get('checked'))))
 
     return render_template('index.html', iframe=iframe)
 
 @trips.route("/create_itin/<checked_stations>", methods=["GET", "POST"])
 def create_itin(checked_stations):
-    checked_stations = json.loads(checked_stations)
+    stations_list = checked_stations.split(",")
     display_stations = {}
     display_lines = {}
-    for station_code in checked_stations:
+    for station_code in stations_list:
         station = stations[station_code]
         display_stations[station_code] = station
         for linecode in station.linecodes:
@@ -45,14 +45,14 @@ def create_itin(checked_stations):
     if form.validate_on_submit():
         itin = Itinerary(
             itin_name=form.itin_name.data,
-            stations=" ".join(checked_stations)
+            stations=checked_stations
         )
         user = User.objects(username=current_user.username).first()
         itin.save()
         user.update(push__itins=itin)
         return redirect(url_for("users.account"))
 
-    return render_template("create_itin.html", itin_form=form, stations=stations, checked_stations=checked_stations, iframe=iframe)
+    return render_template("create_itin.html", itin_form=form, stations=stations, checked_stations=stations_list, iframe=iframe)
 
 @trips.route("/line/<station_code>", methods=["GET"])
 def line_info(station_code):

@@ -18,7 +18,7 @@
         var checkedData = Array.from(checkedElements, function (element) {
             return element.id;
         });
-        document.getElementById('checkedDataBoxes').value = JSON.stringify(checkedData);
+        document.getElementById('checkedDataBoxes').value = checkedData;
         this.submit();
     });
 </script>
