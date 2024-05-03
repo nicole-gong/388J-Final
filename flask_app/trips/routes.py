@@ -27,6 +27,7 @@ def index():
 
 @trips.route("/create_itin/<checked_stations>", methods=["GET", "POST"])
 def create_itin(checked_stations):
+    checked_stations = checked_stations.replace("%2C" , ",")
     stations_list = checked_stations.split(",")
     display_stations = {}
     display_lines = {}
