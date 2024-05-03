@@ -26,7 +26,7 @@
             <h3>Itineraries containing {{ data.name }}: </h3>
             {% for itin, link in zipped %}
                 <a href="{{url_for('trips.create_itin',checked_stations=link)}}" target='_top'>{{ itin.itin_name }}</a>:
-                {% set station_list = itin.stations.split(' ') %}
+                {% set station_list = itin.stations.split(',') %}
                 {% for station in station_list %}
                     <br>{{stations[station].name}}
                 {% endfor %} <br>
